@@ -397,7 +397,39 @@ class A_star():
             s2g_pos.append(pos)
         print("Done Backtracking---------")
         return s2g_pos
+    def record_video(self):
+        
+        s2g_poses = self.backtrack(self.goal_node_idx, self.parent_child_index, self.visited_nodes, self.canvas)    
+        new_canvas = self.canvas.copy().astype(np.uint8)
+        size = (new_canvas.shape[1],new_canvas.shape[0])
+        # Below VideoWriter object will create
+        # a frame of above defined The output 
+        # is stored in 'filename.avi' file.
+        result = cv2.VideoWriter('filename_node_exploration.avi', 
+                                cv2.VideoWriter_fourcc(*'MJPG'),
+                                100, size)
+        # s2g_poses = backtrack(goal_node_idx, parent_child_index, visited_nodes, canvas)
 
+        for prev_pos, new_pos in self.visited_nodes.values():
+            print(prev_pos, new_pos)
+            new_canvas[int(new_pos[1]),int(new_pos[0]),2] = 255
+            new_canvas = cv2.arrowedLine(new_canvas, (int(prev_pos[0]), int(prev_pos[1])),(int(new_pos[0]),int(new_pos[1])),(255,255,255), thickness=1,tipLength=0.5) 
+            result.write(new_canvas)
+            #print(pos)
+            # Display the frame
+            # saved in the file
+            cv2.imshow('Frame', new_canvas)
+            cv2.waitKey(1)
+            # Press S on keyboard 
+            # to stop the process
+            if cv2.waitKey(1) & 0xFF == ord('s'):
+                break
+        # plt.show()
+        result.release()
+
+            
+        # Closes all the frames
+        cv2.destroyAllWindows()
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -416,4 +448,5 @@ if __name__ == "__main__":
     # a_star.take_input()
     a_star.Create_Map()
     a_star.run_A_star()
+    a_star.record_video()
     

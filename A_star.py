@@ -3,10 +3,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import queue
-import matplotlib.animation as animation
 import math
 import argparse
 import time
+import sys
+
+
 class A_star():
     def __init__(self,start_pos,goal_pos,robot_radius,step_size):
         self.robot_radius=robot_radius
@@ -18,8 +20,6 @@ class A_star():
         self.clearance = 5 + robot_radius
         self.start_pos=start_pos
         self.goal_pos=goal_pos 
-        # start_pos = [20, 50, 90]
-        # goal_pos= [320, 230, 0]
         map_size = self.canvas.shape
         
         #start_pos = [6,6] # (x,y) user input
@@ -38,11 +38,17 @@ class A_star():
 
         self.edit_goal_pos = (goal_pos[0],map_size[0]-goal_pos[1]-1, goal_pos[2]) # edit to make it according to array index which is top left as origin to bottom left as origin
 
+        if not self.check_nodes():
+            # Exit if goal and start position is not satisfying certain condition
+            sys.exit(0)
+
         self.node_state = queue.PriorityQueue()
         self.parent_child_index = {0:0}
         self.visited_nodes = {0: (self.edit_start_pos, self.edit_start_pos)}
         self.ang_interval = 30
         self.angle_range = 360//self.ang_interval
+
+
         self.visited_map = np.zeros((self.canvas.shape[0]*2, self.canvas.shape[1]*2, self.angle_range),dtype='int')
         
 
@@ -68,36 +74,56 @@ class A_star():
     
 
     def check_nodes(self):
+        """
+        return :
+            True, if everything is fine, and robot can reach to goal.
+            else,
+                False
+        """
+
         column_limit = None
         row_limit = None
+        Flag = True
+
+
         for c in range(self.clearance, self.canvas.shape[1]-self.clearance):
             su = np.sum(self.canvas[:,c,0]>0)
             # print(su, c)
             if su == self.canvas.shape[0]:
                 column_limit = c
 
-        for r in range(self.canvas.shape[0]):
+        for r in range(self.clearance, self.canvas.shape[0]-self.clearance):
             su = np.sum(self.canvas[r,:,0]>0)
             if su == self.canvas.shape[1]:
                 row_limit = r
 
+        # Check whether robot can reach goal given start and goal pos
+        # if any column fully occupied, then check whether it is dividing start and goal pos 
         if column_limit:
             print("Column Limit : ", column_limit)
             if self.edit_goal_pos[0] > column_limit and self.edit_start_pos[0] < column_limit:
+                Flag = False
                 print("please enter node again, not able to reach the goal")
                 
             elif self.edit_goal_pos[0] < column_limit and self.edit_start_pos[0] > column_limit:
+                Flag = False
                 print("please enter node again, not able to reach the goal")    
+
+        # if any row fully occupied, then check whether it is dividing start and goal pos 
+        if row_limit:
+            if self.edit_goal_pos[1] > column_limit and self.edit_start_pos[1] < column_limit:
+                Flag = False
+                print("please enter node again, not able to reach the goal")
                 
-        # if row_limit:
-        #     if edit_goal_pos[1] > row_limit and edit_start_pos[1] < row_limit:
-        #         print("please enter node again, not able to reach the goal")
-        #     elif edit_goal_pos[1] < row_limit and edit_start_pos[1] > row_limit:
-        #         print("please enter node again, not able to reach the goal")    
+            elif self.edit_goal_pos[1] < column_limit and self.edit_start_pos[1] > column_limit:
+                Flag = False
+                print("please enter node again, not able to reach the goal")    
 
         if self.canvas[self.edit_goal_pos[1], self.edit_goal_pos[0],0] > 0 or self.canvas[self.edit_start_pos[1],self.edit_start_pos[0],0] > 0:
+            Flag = False
             print("please enter node again, as it is coinciding with the obstacles")
-          
+        
+        return Flag
     
     
     def Create_Map(self):
@@ -160,15 +186,7 @@ class A_star():
                     canvas[y,x,0]=255  
 
         plt.imshow(canvas)
-        plt.show()
         cv2.imwrite("map.jpg",canvas)
-        self.check_nodes()
-        
-        
-            
-   
-
-        #return start_pos,goal_pos
     
     def Clock60(self,curr_pos : tuple, map : np.ndarray,step_size):
         
@@ -274,12 +292,7 @@ class A_star():
         cost_to_goal = self.dist(new_pos, self.edit_goal_pos)
 
         cost = cost_to_come + cost_to_goal
-        # if new_x >= W or new_y >= H or new_x < 0 or new_y < 0: 
-        #     return False, curr_pos
-        # # Check if the new pos is inside the obstacle
-        # if map[round(new_pos[1]), round(new_pos[0]),0]>0:
-        #     return False, curr_pos
-        
+
         idx = (360+new_angle)/30 -1 if new_angle < 0 else new_angle/30 - 1 
         if self.visited_map[round(new_pos[1]*2), round(new_pos[0]*2),round(idx)]>0:
             return False, curr_pos
@@ -405,7 +418,7 @@ class A_star():
         # Below VideoWriter object will create
         # a frame of above defined The output 
         # is stored in 'filename.avi' file.
-        result = cv2.VideoWriter('filename_node_exploration.avi', 
+        result = cv2.VideoWriter('node_exploration.avi', 
                                 cv2.VideoWriter_fourcc(*'MJPG'),
                                 100, size)
         # s2g_poses = backtrack(goal_node_idx, parent_child_index, visited_nodes, canvas)

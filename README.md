@@ -25,8 +25,8 @@ python3 a_star_yashveer_mayank.py --StartPos 18 18 0 --GoalPos 200 230 0 --StepS
 
 * Output:
     - `map.jpg`: Image of the map
-    - `node_exploration.avi` : Video of the exploration of the robot, till it reach the goal.
-    - `optimal_path.avi` : Video of the exploration of the robot, till it reach the goal.
+    - `node_exploration.mp4` : Video of the exploration of the robot, till it reach the goal.
+    - `optimal_path.mp4` : Video of the exploration of the robot, till it reach the goal.
     
 ## Dependencies
 * numpy

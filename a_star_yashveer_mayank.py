@@ -424,8 +424,8 @@ class A_star():
         # Below VideoWriter object will create
         # a frame of above defined The output 
         # is stored in 'filename.avi' file.
-        result = cv2.VideoWriter('optimal_path.avi', 
-                                cv2.VideoWriter_fourcc(*'MJPG'),
+        result = cv2.VideoWriter('optimal_path.mp4', 
+                                cv2.VideoWriter_fourcc(*'MP4V'),
                                 30, size)
         s2g_poses = self.backtrack()
 
@@ -456,8 +456,8 @@ class A_star():
         # Below VideoWriter object will create
         # a frame of above defined The output 
         # is stored in 'filename.avi' file.
-        result = cv2.VideoWriter('node_exploration.avi', 
-                                cv2.VideoWriter_fourcc(*'MJPG'),
+        result = cv2.VideoWriter('node_exploration.mp4', 
+                                cv2.VideoWriter_fourcc(*'MP4V'),
                                 100, size)
  
         for prev_pos, new_pos in self.visited_nodes.values():

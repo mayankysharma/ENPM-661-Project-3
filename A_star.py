@@ -40,7 +40,6 @@ class A_star():
 
         self.edit_goal_pos = (goal_pos[0],map_size[0]-goal_pos[1]-1, goal_pos[2]) # edit to make it according to array index which is top left as origin to bottom left as origin
 
-        # self.canvas = self.map.copy()
         cv2.circle(self.map, (self.edit_start_pos[0], self.edit_start_pos[1]), 5, (0,255,0), 2)
         cv2.circle(self.map, (self.edit_goal_pos[0], self.edit_goal_pos[1]), 5, (0, 0, 255), 2)
         cv2.imwrite("map.jpg", self.map)

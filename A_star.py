@@ -358,14 +358,11 @@ class A_star():
         # this map will keep track of visited nodes too, by assigning value 1 to visited node.
         self.visited_map[round(self.edit_start_pos[1]*2), round(self.edit_start_pos[0]*2),round(self.edit_start_pos[2]/30)] = 1
 
-        print("Started Searching --------")
+        print("\nStarted Searching -----------")
         while not self.node_state.empty():
             prev_cost, parent_idx, prev_pos = self.node_state.get()
             for func in [self.Clock60,self.moveForward,self.Clock30,self.AntiClock30,self.AntiClock60]:
                 st, new_node_data=func(curr_pos=prev_pos, map=self.map,step_size=5)
-            # print(prev_cost, parent_idx, prev_pos)
-            # for ang_k in range(angle_range):
-            #     st, new_node_data = Clock30(curr_pos=prev_pos, map=canvas,step_size=10, visited_map=visited_map)
                 if not st:
                     continue
                 
@@ -398,12 +395,12 @@ class A_star():
 
             if self.goal_node_idx:
                 break
-        print("Done Searching, Total time take \n")
-        print("--- %s seconds ---" % (time.time() - start_time))
-        print("----------")
+        print("Done Searching, Total time taken : ")
+        print("--- %s seconds ---" % (round(time.time() - start_time,3)))
+        
         
     def backtrack(self):
-        print("Backtracking -------")
+        print("Started Backtracking -------")
         s2g_pos = []
         idx = self.goal_node_idx
         indices = [idx]
@@ -422,7 +419,7 @@ class A_star():
         return s2g_pos
     
     def record_video_optimal_path(self):
-        
+        print("Recording for Optimal Path ------")
         new_canvas = self.map.copy().astype(np.uint8)
         size = (new_canvas.shape[1],new_canvas.shape[0])
         # Below VideoWriter object will create
@@ -454,7 +451,7 @@ class A_star():
         cv2.destroyAllWindows()
 
     def record_video_node_exploration(self):
-        
+        print("Recording for node exploration ------")
         new_canvas = self.map.copy().astype(np.uint8)
         size = (new_canvas.shape[1],new_canvas.shape[0])
         # Below VideoWriter object will create

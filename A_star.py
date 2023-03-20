@@ -40,6 +40,11 @@ class A_star():
 
         self.edit_goal_pos = (goal_pos[0],map_size[0]-goal_pos[1]-1, goal_pos[2]) # edit to make it according to array index which is top left as origin to bottom left as origin
 
+        # self.canvas = self.map.copy()
+        cv2.circle(self.map, (self.edit_start_pos[0], self.edit_start_pos[1]), 5, (0,255,0), 2)
+        cv2.circle(self.map, (self.edit_goal_pos[0], self.edit_goal_pos[1]), 5, (0, 0, 255), 2)
+        cv2.imwrite("map.jpg", self.map)
+
         if not self.check_nodes():
             # Exit if goal and start position is not satisfying certain condition
             sys.exit(0)
@@ -190,8 +195,6 @@ class A_star():
                 elif x<=clearance or 600-clearance<=x or clearance>=y or 250 - clearance<=y:
                     canvas[y,x,0]=255  
 
-        plt.imshow(canvas)
-        cv2.imwrite("map.jpg",canvas)
         return canvas
     
     def Clock60(self,curr_pos : tuple, map : np.ndarray,step_size):

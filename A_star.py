@@ -16,12 +16,14 @@ class A_star():
         self.total_cost = 0
         self.goal_node_idx = None
         #robot_radius = 1
-        self.canvas = np.zeros((250,600,3))
         self.clearance = 5 + robot_radius
         self.start_pos=start_pos
-        self.goal_pos=goal_pos 
-        map_size = self.canvas.shape
+        self.goal_pos=goal_pos
         
+        self.map = self.Create_Map() 
+        map_size = self.map.shape
+        
+
         #start_pos = [6,6] # (x,y) user input
         # because index start from 0, so handling edge cases when the pos is same as the height or width of the map
         if start_pos[1] >= map_size[0]:
@@ -49,7 +51,7 @@ class A_star():
         self.angle_range = 360//self.ang_interval
 
 
-        self.visited_map = np.zeros((self.canvas.shape[0]*2, self.canvas.shape[1]*2, self.angle_range),dtype='int')
+        self.visited_map = np.zeros((self.map.shape[0]*2, self.map.shape[1]*2, self.angle_range),dtype='int')
         
 
 
@@ -86,21 +88,21 @@ class A_star():
         Flag = True
 
 
-        for c in range(self.clearance, self.canvas.shape[1]-self.clearance):
-            su = np.sum(self.canvas[:,c,0]>0)
+        for c in range(self.clearance, self.map.shape[1]-self.clearance):
+            su = np.sum(self.map[:,c,0]>0)
             # print(su, c)
-            if su == self.canvas.shape[0]:
+            if su == self.map.shape[0]:
                 column_limit = c
 
-        for r in range(self.clearance, self.canvas.shape[0]-self.clearance):
-            su = np.sum(self.canvas[r,:,0]>0)
-            if su == self.canvas.shape[1]:
+        for r in range(self.clearance, self.map.shape[0]-self.clearance):
+            su = np.sum(self.map[r,:,0]>0)
+            if su == self.map.shape[1]:
                 row_limit = r
 
         # Check whether robot can reach goal given start and goal pos
         # if any column fully occupied, then check whether it is dividing start and goal pos 
         if column_limit:
-            print("Column Limit : ", column_limit)
+            # print("Column Limit : ", column_limit)
             if self.edit_goal_pos[0] > column_limit and self.edit_start_pos[0] < column_limit:
                 Flag = False
                 print("please enter node again, not able to reach the goal")
@@ -119,10 +121,13 @@ class A_star():
                 Flag = False
                 print("please enter node again, not able to reach the goal")    
 
-        if self.canvas[self.edit_goal_pos[1], self.edit_goal_pos[0],0] > 0 or self.canvas[self.edit_start_pos[1],self.edit_start_pos[0],0] > 0:
+        if self.map[self.edit_goal_pos[1], self.edit_goal_pos[0],0] > 0:
             Flag = False
-            print("please enter node again, as it is coinciding with the obstacles")
-        
+            print("please enter goal node again, as it is coinciding with the obstacles")
+        if self.map[self.edit_start_pos[1],self.edit_start_pos[0],0] > 0:
+            Flag = False
+            print("please enter start node again, as it is coinciding with the obstacles")
+
         return Flag
     
     
@@ -187,6 +192,7 @@ class A_star():
 
         plt.imshow(canvas)
         cv2.imwrite("map.jpg",canvas)
+        return canvas
     
     def Clock60(self,curr_pos : tuple, map : np.ndarray,step_size):
         
@@ -293,6 +299,9 @@ class A_star():
 
         cost = cost_to_come + cost_to_goal
 
+        if map[round(new_pos[1]), round(new_pos[0]),0]>0:
+            return False, curr_pos
+
         idx = (360+new_angle)/30 -1 if new_angle < 0 else new_angle/30 - 1 
         if self.visited_map[round(new_pos[1]*2), round(new_pos[0]*2),round(idx)]>0:
             return False, curr_pos
@@ -336,22 +345,21 @@ class A_star():
         self.visited_nodes = {0: (self.edit_start_pos, self.edit_start_pos)}
         ang_interval = 30
         angle_range = 360//ang_interval
-        self.visited_map = np.zeros((self.canvas.shape[0]*2, self.canvas.shape[1]*2, angle_range),dtype='int') 
+        self.visited_map = np.zeros((self.map.shape[0]*2, self.map.shape[1]*2, angle_range),dtype='int') 
     
 
         self.node_state.put((0,0, self.edit_start_pos))
         node_counter = 0
         self.goal_node_idx = None
-        self.total_cost = 0
 
         # this map will keep track of visited nodes too, by assigning value 1 to visited node.
         self.visited_map[round(self.edit_start_pos[1]*2), round(self.edit_start_pos[0]*2),round(self.edit_start_pos[2]/30)] = 1
 
-
+        print("Started Searching --------")
         while not self.node_state.empty():
             prev_cost, parent_idx, prev_pos = self.node_state.get()
             for func in [self.Clock60,self.moveForward,self.Clock30,self.AntiClock30,self.AntiClock60]:
-                st, new_node_data=func(curr_pos=prev_pos, map=self.canvas,step_size=5)
+                st, new_node_data=func(curr_pos=prev_pos, map=self.map,step_size=5)
             # print(prev_cost, parent_idx, prev_pos)
             # for ang_k in range(angle_range):
             #     st, new_node_data = Clock30(curr_pos=prev_pos, map=canvas,step_size=10, visited_map=visited_map)
@@ -378,42 +386,73 @@ class A_star():
             #     # Keep track of visited nodes by marking them 1, which can check in 8 functions above
                 # visited_map[round(new_pos[1]*2), round(new_pos[0]*2),round(new_pos[2]/30)] = 1
                 self.visited_nodes[node_counter] = (prev_pos, new_pos)
-                print(np.sum(self.visited_map), new_cost)
+                # print(np.sum(self.visited_map), new_cost)
 
                 if self.isGoalNode(new_pos, self.edit_goal_pos):
-                    total_cost = new_cost
                     self.goal_node_idx = node_counter
                     
                     break
-            #     # break
-            # # break
 
             if self.goal_node_idx:
                 break
-        print("--- %s seconds ---" % (time.time() - start_time))    
+        print("Done Searching, Total time take \n")
+        print("--- %s seconds ---" % (time.time() - start_time))
+        print("----------")
         
-    def backtrack(self,goal_node_idx, parent_child_index, visited_nodes, map):
+    def backtrack(self):
         print("Backtracking -------")
         s2g_pos = []
-        idx = goal_node_idx
+        idx = self.goal_node_idx
         indices = [idx]
 
         while idx!=0:
-            idx = parent_child_index[idx]
+            idx = self.parent_child_index[idx]
             # print(idx)
             indices.append(idx)
         s2g_idx = sorted(indices)
         # print(s2g_idx)
         for idx in s2g_idx:
-            pos =  visited_nodes[idx]
+            pos =  self.visited_nodes[idx]
             # print(pos)
             s2g_pos.append(pos)
         print("Done Backtracking---------")
         return s2g_pos
-    def record_video(self):
+    
+    def record_video_optimal_path(self):
         
-        s2g_poses = self.backtrack(self.goal_node_idx, self.parent_child_index, self.visited_nodes, self.canvas)    
-        new_canvas = self.canvas.copy().astype(np.uint8)
+        new_canvas = self.map.copy().astype(np.uint8)
+        size = (new_canvas.shape[1],new_canvas.shape[0])
+        # Below VideoWriter object will create
+        # a frame of above defined The output 
+        # is stored in 'filename.avi' file.
+        result = cv2.VideoWriter('optimal_path.avi', 
+                                cv2.VideoWriter_fourcc(*'MJPG'),
+                                30, size)
+        s2g_poses = self.backtrack()
+
+        for prev_pos, new_pos in s2g_poses:
+
+            new_canvas[int(new_pos[1]),int(new_pos[0]),:] = 255
+            new_canvas = cv2.arrowedLine(new_canvas, (int(prev_pos[0]), int(prev_pos[1])),(int(new_pos[0]),int(new_pos[1])),(255,255,255), thickness=1,tipLength=0.5) 
+            result.write(new_canvas)
+            # Display the frame
+            # saved in the file
+            cv2.imshow('Frame', new_canvas)
+            cv2.waitKey(1)
+            # Press S on keyboard 
+            # to stop the process
+            if cv2.waitKey(1) & 0xFF == ord('s'):
+                break
+
+        result.release()
+
+            
+        # Closes all the frames
+        cv2.destroyAllWindows()
+
+    def record_video_node_exploration(self):
+        
+        new_canvas = self.map.copy().astype(np.uint8)
         size = (new_canvas.shape[1],new_canvas.shape[0])
         # Below VideoWriter object will create
         # a frame of above defined The output 
@@ -421,14 +460,13 @@ class A_star():
         result = cv2.VideoWriter('node_exploration.avi', 
                                 cv2.VideoWriter_fourcc(*'MJPG'),
                                 100, size)
-        # s2g_poses = backtrack(goal_node_idx, parent_child_index, visited_nodes, canvas)
-
+ 
         for prev_pos, new_pos in self.visited_nodes.values():
-            print(prev_pos, new_pos)
-            new_canvas[int(new_pos[1]),int(new_pos[0]),2] = 255
+            # print(prev_pos, new_pos)
+            new_canvas[int(new_pos[1]),int(new_pos[0]),:] = 255
             new_canvas = cv2.arrowedLine(new_canvas, (int(prev_pos[0]), int(prev_pos[1])),(int(new_pos[0]),int(new_pos[1])),(255,255,255), thickness=1,tipLength=0.5) 
             result.write(new_canvas)
-            #print(pos)
+
             # Display the frame
             # saved in the file
             cv2.imshow('Frame', new_canvas)
@@ -446,8 +484,8 @@ class A_star():
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--StartPos", nargs='+', type=int, default= [0, 0, 0], help = 'start position')
-    parser.add_argument("--GoalPos", nargs='+', type=int, default= [350, 250,0], help = 'goal position')
+    parser.add_argument("--StartPos", nargs='+', type=int, default= [18, 18, 0], help = 'start position')
+    parser.add_argument("--GoalPos", nargs='+', type=int, default= [200, 230,0], help = 'goal position')
     parser.add_argument("--StepSize", type=int, default= 5, help = 'Step size: 1-10')
     parser.add_argument("--RobotRadius", type=int, default= 5)
     args = parser.parse_args()
@@ -459,7 +497,7 @@ if __name__ == "__main__":
     print("Goal Pos recieved : ", goal_pos)
     a_star=A_star(start_pos,goal_pos,robot_radius,step_size)
     # a_star.take_input()
-    a_star.Create_Map()
     a_star.run_A_star()
-    a_star.record_video()
+    a_star.record_video_node_exploration()
+    a_star.record_video_optimal_path()
     

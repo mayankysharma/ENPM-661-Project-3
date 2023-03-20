@@ -2,7 +2,6 @@
 
 ## Phase 1
 Mayank Sharma: 119203859
-
 Yashveer Jain: 119252864
 
 ## Steps to run the code
@@ -28,3 +27,6 @@ python3 --StartPos 18 18 0 --GoalPos 200 230 0 --StepSize 5 --RobotRadius 5
     - `map.jpg`: Image of the map
     - `node_exploration.avi` : Video of the exploration of the robot, till it reach the goal.
     - `optimal_path.avi` : Video of the exploration of the robot, till it reach the goal.
+
+## Sample map
+![](sample_map.jpg)

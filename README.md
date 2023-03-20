@@ -3,11 +3,11 @@
 ## Phase 1
 Mayank Sharma: 119203859
 
-Yashveer Jain: 
+Yashveer Jain: 119252864
 
 ## Steps to run the code
 ```
-python3 --StartPos 0 0 0 --GoalPos 1 2 3 --StepSize 5 --RobotRadius 5
+python3 --StartPos 18 18 0 --GoalPos 200 230 0 --StepSize 5 --RobotRadius 5
 ```
 * Arguments:
     - StartPos contains value

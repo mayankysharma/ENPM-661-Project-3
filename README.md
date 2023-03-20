@@ -27,3 +27,4 @@ python3 --StartPos 0 0 0 --GoalPos 1 2 3 --StepSize 5 --RobotRadius 5
 * Output:
     - `map.jpg`: Image of the map
     - `node_exploration.avi` : Video of the exploration of the robot, till it reach the goal.
+    - `optimal_path.avi` : Video of the exploration of the robot, till it reach the goal.

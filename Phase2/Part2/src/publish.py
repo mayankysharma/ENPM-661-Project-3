@@ -2,7 +2,7 @@
 import rospy
 import sys
 from geometry_msgs.msg import Twist
-from a_star_v2 import A_star_Proj3_Phase2
+from a_star import A_star_Proj3_Phase2
 import pickle as pkl
 import sys
 import math
@@ -38,9 +38,10 @@ def AutoDriving(s2g_poses, a_star):
     rate = rospy.Rate(10)
     twist = Twist() 
     rospy.loginfo("Data is being sent")
+    flag = False
     while not rospy.is_shutdown():
         num_subs = move_pub.get_num_connections()
-        if num_subs > 0:
+        if num_subs > 0 and not flag:
             for prev_pos, new_pos, action in s2g_poses:
 
                 # print("-----------\n new pos  : ",new_pos)
@@ -55,6 +56,16 @@ def AutoDriving(s2g_poses, a_star):
                     rospy.loginfo(f"publishing speed : {twist.linear.x}")
                     move_pub.publish(twist)
                     rate.sleep()
+            # Stop robot
+            twist.linear.x = 0
+            twist.angular.z = 0
+            twist.linear.y = 0
+            twist.linear.z = 0
+            twist.angular.x = 0
+            twist.angular.y = 0
+            flag = True
+            # sys.exit(0)
+            # break
             
     print("ROS is shutdown")
     sys.exit(1)
@@ -71,8 +82,8 @@ if __name__ == '__main__':
     a_star.run_A_star()
     sg2_poses=a_star.backtrack()
     a_star.record_video(sg2_poses)
-    pkl.dump(sg2_poses, open("s2g_poses.pkl","wb"))
-    # sg2_poses = pkl.load(open("s2g_poses.pkl","rbc"))
+    # # pkl.dump(sg2_poses, open("s2g_poses.pkl","wb"))
+    # # sg2_poses = pkl.load(open("s2g_poses.pkl","rbc"))
     try:
         AutoDriving(sg2_poses, a_star)
     except rospy.ROSInterruptException: 

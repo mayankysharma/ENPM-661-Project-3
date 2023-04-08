@@ -8,8 +8,8 @@
   <arg name = "start_ang" default= "0"/>
   <arg name = "goal_x" default= "500"/>
   <arg name = "goal_y" default= "0"/>
-  <arg name = "clearance" default= "5"/>
-  <arg name = "rpm1" default= "5"/>
+  <arg name = "clearance" default= "8"/>
+  <arg name = "rpm1" default= "8"/>
   <arg name = "rpm2" default= "10"/>
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">

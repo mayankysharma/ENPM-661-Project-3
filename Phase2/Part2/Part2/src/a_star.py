@@ -31,7 +31,7 @@ class A_star_Proj3_Phase2():
             start_pos[1] = map_size[0]-1
         if start_pos[0] >= map_size[1]:
             start_pos[0] = map_size[1]-1
-        self.edit_start_pos = (start_pos[0],map_size[0]-start_pos[1]-1, start_pos[2]) # edit to make it according to array index which is top left as origin to bottom left as origi
+        self.edit_start_pos = (start_pos[0]+50,map_size[0]-start_pos[1]-100-1, start_pos[2]) # edit to make it according to array index which is top left as origin to bottom left as origi
         self.actions=[[0,self.rpm_1], [self.rpm_1,0],[self.rpm_1,self.rpm_2],[0,self.rpm_2],[self.rpm_2,0],[self.rpm_2,self.rpm_2],[self.rpm_1,self.rpm_2],[self.rpm_2,self.rpm_1]]
         
         #goal_pos = [550,220] # (x,y) user input
@@ -41,16 +41,21 @@ class A_star_Proj3_Phase2():
         if goal_pos[0] >= map_size[1]:
             goal_pos[0] = map_size[1]-1
 
-        self.edit_goal_pos = (goal_pos[0],map_size[0]-goal_pos[1]-1) # edit to make it according to array index which is top left as origin to bottom left as origin
+        self.edit_goal_pos = (goal_pos[0]+500,map_size[0]-goal_pos[1]-100-1) # edit to make it according to array index which is top left as origin to bottom left as origin
 
         if not self.check_nodes():
             # Exit if goal and start position is not satisfying certain condition
             sys.exit(0)
 
+        cv2.circle(self.map, (self.edit_start_pos[0], self.edit_start_pos[1]), 5, (0,255,0), 2)
+        cv2.circle(self.map, (self.edit_goal_pos[0], self.edit_goal_pos[1]), 5, (0, 0, 255), 2)
+        cv2.imwrite("map.jpg", self.map)
+
+
         self.node_state = queue.PriorityQueue()
         self.parent_child_index = {0:0}
         self.visited_nodes = {0: (self.edit_start_pos, self.edit_start_pos, [0,0])}
-        self.ang_interval = 10
+        self.ang_interval = 30
         self.angle_range = 360//self.ang_interval
 
 
@@ -92,14 +97,7 @@ class A_star_Proj3_Phase2():
             Flag = False
         return Flag
             
-    # def move(self,vl, vr, prev_pos):
-    #     (x,y,theta) = prev_pos
-    #     new_x = x + (self.wheel_radius/2) * (vl + vr) * math.cos(math.radians(theta)) * time_step
-    #     new_y = y + (self.wheel_radius/2) * (vl + vr) * math.sin(math.radians(theta)) * time_step
-    #     new_theta = (self.wheel_radius/self.wheel_dist) * (vr - vl) * self.time_step
-        
-        
-        # return (new_x, new_y, new_theta)
+
     def dist(self,A, B):
         return math.sqrt((A[0]-B[0])**2+(B[1]-A[1])**2)
     
@@ -123,8 +121,8 @@ class A_star_Proj3_Phase2():
         D=0
         while t<1: # loop for 1 sec
             t = t + dt
-            Delta_Xn = 0.5*self.wheel_radius * (UL + UR) * math.cos(Thetan) * dt
-            Delta_Yn = 0.5*self.wheel_radius * (UL + UR) * math.sin(Thetan) * dt
+            Delta_Xn = 0.5*self.wheel_radius * (UL + UR) * math.cos(Thetan)/60 * dt
+            Delta_Yn = 0.5*self.wheel_radius * (UL + UR) * math.sin(Thetan)/60 * dt
             Thetan += (self.wheel_radius /self.wheel_dist) * (UR - UL) * dt
             Xn += Delta_Xn
             Yn += Delta_Yn
@@ -145,13 +143,12 @@ class A_star_Proj3_Phase2():
             return False, curr_pos, self.visited_map
         new_x,new_y,new_angle,D = val
         
-        # cost_to_come = dist(new_pos, edit_start_pos)
         
         new_pos = (new_x, new_y,new_angle)
         cost_to_come = D
         cost_to_goal = self.dist(new_pos, self.edit_goal_pos)
-
         cost = cost_to_come + cost_to_goal
+        
         if new_x >= W or new_y >= H or new_x < 0 or new_y < 0: 
             return False, curr_pos, self.visited_map
         # Check if the new pos is inside the obstacle
@@ -164,7 +161,8 @@ class A_star_Proj3_Phase2():
         # print(new_angle)
         new_pos = (new_x, new_y, new_angle)
 
-        idx = (360+new_angle)//10 if new_angle < 0 else new_angle//10
+        # idx = ((360+new_angle)%360)//10 if new_angle < 0 else new_angle//10
+        idx = (new_angle%360)//self.ang_interval
         # print(round(new_pos[1]*2), round(new_pos[0]*2),round(idx), new_angle)  
         if self.visited_map[round(new_pos[1]*2), round(new_pos[0]*2), round(idx)]>0:
             return False, curr_pos, self.visited_map
@@ -227,7 +225,7 @@ class A_star_Proj3_Phase2():
         # this map will keep track of visited nodes too, by assigning value 1 to visited node.
         self.visited_map[round(self.edit_start_pos[1]*2), round(self.edit_start_pos[0]*2),round(self.edit_start_pos[2]//10)] = 1
         # actions=[[5,5], [10,10],[5,0],[0,5],[5,10],[10,5]]
-        
+        cost_to_come = 0
         while not self.node_state.empty():
             prev_cost, parent_idx, prev_pos = self.node_state.get()
             for action in self.actions:
@@ -240,7 +238,7 @@ class A_star_Proj3_Phase2():
                 
                 # get new node cost and pos
                 new_cost,new_pos = new_node_data
-                
+
             #     # increase node index and add the new node cost and state to queue
                 node_counter += 1 
                 # new_cost = prev_cost
@@ -250,8 +248,8 @@ class A_star_Proj3_Phase2():
             #     # Keep track of visited nodes by marking them 1, which can check in 8 functions above
                 # visited_map[round(new_pos[1]*2), round(new_pos[0]*2),round(new_pos[2]/30)] = 1
                 self.visited_nodes[node_counter] = (prev_pos, new_pos, action)
-                print(np.sum(self.visited_map), new_cost)
-                # print(new_pos, edit_goal_pos)
+                print("Nodes visted : ",np.sum(self.visited_map),"| COST : ", new_cost)
+                # print(new_pos, self.edit_goal_pos)
                 if self.isGoalNode(new_pos, self.edit_goal_pos):
                     self.total_cost = new_cost
                     self.goal_node_idx = node_counter
@@ -290,7 +288,7 @@ class A_star_Proj3_Phase2():
         # is stored in 'filename.avi' file.
         result = cv2.VideoWriter('filename.avi', 
                                 cv2.VideoWriter_fourcc(*'MJPG'),
-                                10, size)
+                                600, size)
 
         for prev_pos, new_pos, _ in s2g_poses:
             new_canvas[int(new_pos[1]),int(new_pos[0]),2] = 255
@@ -320,16 +318,14 @@ class A_star_Proj3_Phase2():
         
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--StartPos", nargs='+', type=int, default= [100, 50, 90], help = 'start position')
-    parser.add_argument("--GoalPos", nargs='+', type=int, default= [500, 100], help = 'goal position')
-    parser.add_argument("--StepSize", type=int, default= 5, help = 'Step size: 1-10')
+    parser.add_argument("--StartPos", nargs='+', type=int, default= [0, 0, 0], help = 'start position')
+    parser.add_argument("--GoalPos", nargs='+', type=int, default= [5, 0], help = 'goal position')
     parser.add_argument("--clearance", type=int, default= 5)
     parser.add_argument("--RPM1", type=int, default= 5)
     parser.add_argument("--RPM2", type=int, default= 10)
     args = parser.parse_args()
     start_pos = list(args.StartPos)
     goal_pos = list(args.GoalPos)
-    step_size=(args.StepSize)
     clearance=(args.clearance)
     rpm_1=(args.RPM1)
     rpm_2=(args.RPM2)

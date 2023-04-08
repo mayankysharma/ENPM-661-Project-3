@@ -280,7 +280,8 @@ class A_star_Proj3_Phase2_P1():
                 # Keep track of visited nodes by marking them 1, which can check in 8 functions above
                 # visited_map[round(new_pos[1]*2), round(new_pos[0]*2),round(new_pos[2]/30)] = 1
                 self.visited_nodes[node_counter] = (prev_pos, new_pos, action)
-                print(np.sum(self.visited_map), new_cost)
+                print("Nodes visted : ",np.sum(self.visited_map),"| COST : ", new_cost)
+                
                 # print(new_pos, edit_goal_pos)
                 if self.isGoalNode(new_pos, self.edit_goal_pos):
                     self.total_cost = new_cost

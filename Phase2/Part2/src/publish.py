@@ -2,7 +2,7 @@
 import rospy
 import sys
 from geometry_msgs.msg import Twist
-from a_star import A_star_Proj3_Phase2
+from a_star_v2 import A_star_Proj3_Phase2
 import pickle as pkl
 import sys
 import math

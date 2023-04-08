@@ -10,7 +10,7 @@ import argparse
 class A_star_Proj3_Phase2():
 
     def __init__(self,start_pos,goal_pos,clearance,rpm_1,rpm_2):
-        self.wheel_radius = 3 # cm
+        self.wheel_radius = 3.3 # cm
         self.wheel_dist = 16 # cm
         self.time_step = 0.1 # sec
         self.robot_radius = 11 #cm
@@ -19,29 +19,29 @@ class A_star_Proj3_Phase2():
         self.total_cost = 0
         self.rpm_1=rpm_1
         self.rpm_2=rpm_2
-        self.clearance=clearance
+        self.clearance=clearance + self.robot_radius
         #robot_radius = 1
         # self.clearance = 5 + self.robot_radius
         self.start_pos=start_pos
-        self.goal_pos=goal_pos
+        self.goal_pos=goal_pos+[0] # angle setting 0 deg not important for legacy
         self.map = self.Create_Map() 
-        map_size = self.map.shape
+        self.map_size = self.map.shape
         self.goal_node_idx = None
-        if start_pos[1] >= map_size[0]:
-            start_pos[1] = map_size[0]-1
-        if start_pos[0] >= map_size[1]:
-            start_pos[0] = map_size[1]-1
-        self.edit_start_pos = (start_pos[0]+50,map_size[0]-start_pos[1]-100-1, start_pos[2]) # edit to make it according to array index which is top left as origin to bottom left as origi
+        if start_pos[1] >= self.map_size[0]:
+            start_pos[1] = self.map_size[0]-1
+        if start_pos[0] >= self.map_size[1]:
+            start_pos[0] = self.map_size[1]-1
+        self.edit_start_pos = self.real2map_coord(start_pos) # edit to make it according to array index which is top left as origin to bottom left as origi
         self.actions=[[0,self.rpm_1], [self.rpm_1,0],[self.rpm_1,self.rpm_2],[0,self.rpm_2],[self.rpm_2,0],[self.rpm_2,self.rpm_2],[self.rpm_1,self.rpm_2],[self.rpm_2,self.rpm_1]]
         
         #goal_pos = [550,220] # (x,y) user input
         # because index start from 0, so handling edge cases when the pos is same as the height or width of the map
-        if goal_pos[1] >= map_size[0]:
-            goal_pos[1] = map_size[0]-1
-        if goal_pos[0] >= map_size[1]:
-            goal_pos[0] = map_size[1]-1
+        if goal_pos[1] >= self.map_size[0]:
+            goal_pos[1] = self.map_size[0]-1
+        if goal_pos[0] >= self.map_size[1]:
+            goal_pos[0] = self.map_size[1]-1
 
-        self.edit_goal_pos = (goal_pos[0]+500,map_size[0]-goal_pos[1]-100-1) # edit to make it according to array index which is top left as origin to bottom left as origin
+        self.edit_goal_pos = self.real2map_coord(self.goal_pos) # edit to make it according to array index which is top left as origin to bottom left as origin
 
         if not self.check_nodes():
             # Exit if goal and start position is not satisfying certain condition
@@ -54,7 +54,7 @@ class A_star_Proj3_Phase2():
 
         self.node_state = queue.PriorityQueue()
         self.parent_child_index = {0:0}
-        self.visited_nodes = {0: (self.edit_start_pos, self.edit_start_pos, [0,0])}
+        self.visited_nodes = {0: (self.start_pos, self.start_pos, [0,0])}
         self.ang_interval = 30
         self.angle_range = 360//self.ang_interval
 
@@ -62,6 +62,12 @@ class A_star_Proj3_Phase2():
         # self.visited_map = np.zeros((self.map.shape[0]*2, self.map.shape[1]*2, self.angle_range),dtype='int')
         self.visited_map = np.zeros((self.map.shape[0]*2,self.map.shape[1]*2, self.angle_range),dtype='int')
     
+    def real2map_coord(self, pos):
+        # convert real coordinate to map coordinate shifting origin according to question
+        return [pos[0]+50,self.map_size[0]-pos[1]-100-1,pos[2]]
+
+
+
     def check_nodes(self):
         column_limit = None
         row_limit = None
@@ -109,7 +115,7 @@ class A_star_Proj3_Phase2():
         Xi : px 
         """
         t = 0
-        dt = 0.1
+        dt = self.time_step
         Xn=Xi
         Yn=Yi
         Thetan = 3.14 * Thetai / 180
@@ -128,7 +134,8 @@ class A_star_Proj3_Phase2():
             Thetan += (self.wheel_radius /self.wheel_dist) * (UR - UL) * dt
             Xn += Delta_Xn
             Yn += Delta_Yn
-            if map[round(Yn), round(Xn), 0]>0:
+            map_coord = self.real2map_coord([Xn,Yn,Thetan])
+            if map[round(map_coord[1]), round(map_coord[0]), 0]>0:
                 return None
             D=D+ math.sqrt(math.pow((Delta_Xn),2)+math.pow((Delta_Yn),2))
         Thetan = 180 * (Thetan) / 3.14
@@ -148,27 +155,28 @@ class A_star_Proj3_Phase2():
         
         new_pos = (new_x, new_y,new_angle)
         cost_to_come = D
-        cost_to_goal = self.dist(new_pos, self.edit_goal_pos)
+        cost_to_goal = self.dist(new_pos, self.goal_pos)
         cost = cost_to_come + cost_to_goal
         
-        if new_x >= W or new_y >= H or new_x < 0 or new_y < 0: 
-            return False, curr_pos, self.visited_map
-        # Check if the new pos is inside the obstacle
-        if map1[round(new_pos[1]), round(new_pos[0]), 0]>0:
-            return False, curr_pos, self.visited_map
-        
-        # print("-----------")
-        # print(new_angle)
         new_angle %= 360
         # print(new_angle)
         new_pos = (new_x, new_y, new_angle)
-
         # idx = ((360+new_angle)%360)//10 if new_angle < 0 else new_angle//10
         idx = (new_angle%360)//self.ang_interval
         # print(round(new_pos[1]*2), round(new_pos[0]*2),round(idx), new_angle)  
-        if self.visited_map[round(new_pos[1]*2), round(new_pos[0]*2), round(idx)]>0:
+        
+        new_pos_map_coord = self.real2map_coord(new_pos)
+        # print(new_pos_map_coord, new_pos)
+        if new_pos_map_coord[0] >= W or new_pos_map_coord[1] >= H or new_pos_map_coord[0] < 0 or new_pos_map_coord[1] < 0: 
             return False, curr_pos, self.visited_map
-        self.visited_map[round(new_pos[1]*2), round(new_pos[0]*2), round(idx)] = 1
+        # Check if the new pos is inside the obstacle
+        if map1[round(new_pos_map_coord[1]), round(new_pos_map_coord[0]), 0]>0:
+            return False, curr_pos, self.visited_map
+        
+        
+        if self.visited_map[round(new_pos_map_coord[1]*2), round(new_pos_map_coord[0]*2), round(idx)]>0:
+            return False, curr_pos, self.visited_map
+        self.visited_map[round(new_pos_map_coord[1]*2), round(new_pos_map_coord[0]*2), round(idx)] = 1
         ## can add checking for isnode condition here
         return True, (cost, new_pos), self.visited_map 
     def Create_Map(self):
@@ -211,7 +219,7 @@ class A_star_Proj3_Phase2():
         # self.node_state = queue.PriorityQueue()
 
         # self.visited_nodes = {0: (self.edit_start_pos, self.edit_start_pos,[0,0])}
-        self.node_state.put((0,0, self.edit_start_pos))
+        self.node_state.put((0,0, self.start_pos))
         node_counter = 0
         
         # self.visited_map[round(self.edit_start_pos[1]*2), round(self.edit_start_pos[0]*2),round(self.edit_start_pos[2]/30)] = 1
@@ -226,7 +234,7 @@ class A_star_Proj3_Phase2():
             prev_cost, parent_idx, prev_pos = self.node_state.get()
             for action in self.actions:
                 st, new_node_data, self.visited_map = self.Move_Action(prev_pos,self.map,action[0],action[1])
-            # print(prev_cost, parent_idx, prev_pos)
+                # print(prev_cost, parent_idx, prev_pos) 
             # for ang_k in range(angle_range):
             #     st, new_node_data = Clock30(curr_pos=prev_pos, map=canvas,step_size=10, visited_map=visited_map)
                 if not st:
@@ -245,8 +253,8 @@ class A_star_Proj3_Phase2():
                 # visited_map[round(new_pos[1]*2), round(new_pos[0]*2),round(new_pos[2]/30)] = 1
                 self.visited_nodes[node_counter] = (prev_pos, new_pos, action)
                 print("Nodes visted : ",np.sum(self.visited_map),"| COST : ", new_cost)
-                # print(new_pos, self.edit_goal_pos)
-                if self.isGoalNode(new_pos, self.edit_goal_pos):
+                # print(self.real2map_coord(new_pos), self.edit_goal_pos)
+                if self.isGoalNode(self.real2map_coord(new_pos), self.edit_goal_pos):
                     self.total_cost = new_cost
                     self.goal_node_idx = node_counter
                     break
@@ -284,26 +292,27 @@ class A_star_Proj3_Phase2():
         # is stored in 'filename.avi' file.
         result = cv2.VideoWriter('filename.avi', 
                                 cv2.VideoWriter_fourcc(*'MJPG'),
-                                600, size)
+                                60, size)
 
         for prev_pos, new_pos, _ in s2g_poses:
-            new_canvas[int(new_pos[1]),int(new_pos[0]),2] = 255
-            for action in self.actions:
-            # print(prev_pos, new_pos)
-                # if prev_pos==new_pos:
-                #     continue
-                new_canvas = cv2.arrowedLine(new_canvas, (int(prev_pos[0]), int(prev_pos[1])),(int(new_pos[0]),int(new_pos[1])),(255,255,255), thickness=1,tipLength=0.5) 
-                # new_canvas = plot_curve(prev_pos[0],prev_pos[1], prev_pos[2],action[0], action[1], new_canvas)
-                result.write(new_canvas)
-                #print(pos)
-                # Display the frame
-                # saved in the file
-                cv2.imshow('Frame', new_canvas)
+            
+            # print("prev Pose : ",prev_pos, "| new Pose : ",new_pos)    
+            # Converting the real world coordinate to map coordinate 
+            prev_pos = self.real2map_coord(prev_pos)
+            new_pos = self.real2map_coord(new_pos) 
 
-                # Press S on keyboard 
-                # to stop the process
-                if cv2.waitKey(10) & 0xFF == ord('s'):
-                    break
+            new_canvas = cv2.arrowedLine(new_canvas, (int(prev_pos[0]), int(prev_pos[1])),(int(new_pos[0]),int(new_pos[1])),(255,255,255), thickness=1,tipLength=0.5) 
+            # new_canvas = plot_curve(prev_pos[0],prev_pos[1], prev_pos[2],action[0], action[1], new_canvas)
+            result.write(new_canvas)
+            #print(pos)
+            # Display the frame
+            # saved in the file
+            cv2.imshow('Frame', new_canvas)
+
+            # Press S on keyboard 
+            # to stop the process
+            if cv2.waitKey(10) & 0xFF == ord('s'):
+                break
             # plt.show()
         result.release()
 
@@ -314,8 +323,8 @@ class A_star_Proj3_Phase2():
         
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--StartPos", nargs='+', type=int, default= [0, 0, 0], help = 'start position')
-    parser.add_argument("--GoalPos", nargs='+', type=int, default= [5, 0], help = 'goal position')
+    parser.add_argument("--StartPos", nargs='+', type=int, default= [0, 0, 0], help = 'start position (cm)')
+    parser.add_argument("--GoalPos", nargs='+', type=int, default= [500, 0], help = 'goal position (cm)')
     parser.add_argument("--clearance", type=int, default= 5)
     parser.add_argument("--RPM1", type=int, default= 5)
     parser.add_argument("--RPM2", type=int, default= 10)

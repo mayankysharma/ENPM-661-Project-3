@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 import sys
 from geometry_msgs.msg import Twist
@@ -61,7 +61,6 @@ def compute_vel(pos, action, a_star):
 
 
 def AutoDriving(s2g_poses, a_star):
-    rospy.init_node('command_center')
 
     move_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
     rate = rospy.Rate(10)
@@ -89,11 +88,13 @@ def AutoDriving(s2g_poses, a_star):
                 sys.exit(1)
         
 if __name__ == '__main__':
-    start_pos = sys.argv[1:4] # [50, 100, 0] # start pos (0,0,0) as mentioned in the question (but set according to map)
-    goal_pos = sys.argv[4:6] #[500, 100] # goal pos (5,0) as mentioned in the question (but set according to map)
-    clearance= sys.argv[6] # 5 cm
-    rpm_1= sys.argv[7] # 5 RPM
-    rpm_2= sys.argv[8] # 10 RPM
+    rospy.init_node('command_center')
+    print(sys.argv[1:4])
+    start_pos = list(map(int,sys.argv[1:4])) # [50, 100, 0] # start pos (0,0,0) as mentioned in the question (but set according to map)
+    goal_pos = list(map(int,sys.argv[4:6])) #[500, 100] # goal pos (5,0) as mentioned in the question (but set according to map)
+    clearance= int(sys.argv[6]) # 5 cm
+    rpm_1= int(sys.argv[7]) # 5 RPM
+    rpm_2= int(sys.argv[8]) # 10 RPM
     a_star=A_star_Proj3_Phase2(start_pos,goal_pos,clearance,rpm_1,rpm_2)
     a_star.run_A_star()
     sg2_poses=a_star.backtrack()

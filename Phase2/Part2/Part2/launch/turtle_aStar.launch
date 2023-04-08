@@ -28,7 +28,7 @@
 
 
 
-  <node pkg="Part2" name="publish.py" type="publish.py" 
+  <node pkg="Part2" name="turtle_talker" type="publish.py" 
     output="screen"
     args = "$(arg start_x) $(arg start_y) $(arg start_ang) $(arg goal_x) $(arg goal_y) $(arg clearance) $(arg rpm1) $(arg rpm2)"/>
 

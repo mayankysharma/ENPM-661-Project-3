@@ -54,6 +54,8 @@ source devel/setup.bash
 ```
 
 * To run the launch file
+    * Input start and goal position in cms
+
 ```
 roslaunch Part2/launch/turtle_aStar.launch start_x:=<input> start_y:=<input> start_ang:=<input> goal_x:=<input> goal_y:=<input> clearance:=<input> rpm1:=<input> rpm2:=<input>
 ```

@@ -6,38 +6,6 @@ from a_star import A_star_Proj3_Phase2
 import pickle as pkl
 import sys
 
-# def compute_vel(pos, action, a_star):
-#     Xi, Yi, Thetai = pos
-#     UL,UR = action
-
-#     t = 0
-#     dt = 0.1
-#     # Xn=Xi
-#     # Yn=Yi
-#     Thetan = 3.14 * Thetai / 180
-
-#     # Xi, Yi,Thetai: Input point's coordinates
-#     # Xs, Ys: Start point coordinates for plot function
-#     # Xn, Yn, Thetan: End point coordintes
-
-#     D=0
-#     while t<1: # loop for 1 sec
-#         t = t + dt
-#         Delta_Xn = 0.5*a_star.wheel_radius * (UL + UR) * math.cos(Thetan) 
-#         Delta_Yn = 0.5*a_star.wheel_radius * (UL + UR) * math.sin(Thetan) 
-#         ang_vel = (a_star.wheel_radius/a_star.wheel_dist) * (UR - UL)
-#         Thetan += ang_vel * dt 
-#         # Xn += Delta_Xn * dt
-#         # Yn += Delta_Yn * dt
-#         # vel =  min(Delta_Xn/60,0.3)
-#         # ang_vel =  min(ang_vel/60,0.3)
-#         vel = math.sqrt(Delta_Xn**2 + Delta_Yn**2)/100
-#         # vel = (Delta_Xn/60) # converting to m/sec
-#         ang_vel = ang_vel/60 # converting to rad/sec 
-#         yield vel, ang_vel
-#     # print("Xn : ",Xn, "Yn : ",Yn)
-#     Thetan = 180 * (Thetan) / 3.14
-
 
 def compute_vel(pos, action, a_star):
     Xi, Yi, Thetai = pos
@@ -47,6 +15,9 @@ def compute_vel(pos, action, a_star):
     # Xs, Ys: Start point coordinates for plot function
     # Xn, Yn, Thetan: End point coordintes
 
+    UL *= 2 * 3.14 / 60
+    UR *= 2 * 3.14 / 60
+
     D=0
     T = 0
     dt = 0.1
@@ -55,8 +26,8 @@ def compute_vel(pos, action, a_star):
         T+=dt
         Delta_Xn = 0.5*a_star.wheel_radius * (UL + UR) 
         ang_vel = (a_star.wheel_radius/a_star.wheel_dist) * (UR - UL)
-        vel = (Delta_Xn/60)/100 # converting to m/sec
-        ang_vel = ang_vel/60 # converting to rad/sec 
+        vel = (Delta_Xn)/100 # converting to m/sec
+        ang_vel = ang_vel # converting to rad/sec 
         yield vel, ang_vel
 
 
@@ -96,11 +67,11 @@ if __name__ == '__main__':
     rpm_1= int(sys.argv[7]) # 5 RPM
     rpm_2= int(sys.argv[8]) # 10 RPM
     a_star=A_star_Proj3_Phase2(start_pos,goal_pos,clearance,rpm_1,rpm_2)
-    a_star.run_A_star()
-    sg2_poses=a_star.backtrack()
-    a_star.record_video(sg2_poses)
-    pkl.dump(sg2_poses, open("s2g_poses.pkl","wb"))
-    # sg2_poses = pkl.load(open("s2g_poses.pkl","rb"))
+    # a_star.run_A_star()
+    # sg2_poses=a_star.backtrack()
+    # a_star.record_video(sg2_poses)
+    # pkl.dump(sg2_poses, open("s2g_poses.pkl","wb"))
+    sg2_poses = pkl.load(open("s2g_poses.pkl","rb"))
     try:
         AutoDriving(sg2_poses, a_star)
     except rospy.ROSInterruptException: 

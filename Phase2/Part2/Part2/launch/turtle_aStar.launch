@@ -27,10 +27,10 @@
   <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf" args="-urdf -model turtlebot3_$(arg model) -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -param robot_description" />
 
 
-
+<!-- 
   <node pkg="Part2" name="turtle_talker" type="publish.py" 
     output="screen"
-    args = "$(arg start_x) $(arg start_y) $(arg start_ang) $(arg goal_x) $(arg goal_y) $(arg clearance) $(arg rpm1) $(arg rpm2)"/>
+    args = "$(arg start_x) $(arg start_y) $(arg start_ang) $(arg goal_x) $(arg goal_y) $(arg clearance) $(arg rpm1) $(arg rpm2)"/> -->
 
 
 </launch>

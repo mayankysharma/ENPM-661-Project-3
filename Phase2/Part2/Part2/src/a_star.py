@@ -117,12 +117,14 @@ class A_star_Proj3_Phase2():
         # Xi, Yi,Thetai: Input point's coordinates
         # Xs, Ys: Start point coordinates for plot function
         # Xn, Yn, Thetan: End point coordintes
+        UL *= 2 * math.pi/60
+        UR *= 2 * math.pi/60
 
         D=0
         while t<1: # loop for 1 sec
             t = t + dt
-            Delta_Xn = 0.5*self.wheel_radius * (UL + UR) * math.cos(Thetan)/60 * dt
-            Delta_Yn = 0.5*self.wheel_radius * (UL + UR) * math.sin(Thetan)/60 * dt
+            Delta_Xn = 0.5*self.wheel_radius * (UL + UR) * math.cos(Thetan) * dt
+            Delta_Yn = 0.5*self.wheel_radius * (UL + UR) * math.sin(Thetan) * dt
             Thetan += (self.wheel_radius /self.wheel_dist) * (UR - UL) * dt
             Xn += Delta_Xn
             Yn += Delta_Yn

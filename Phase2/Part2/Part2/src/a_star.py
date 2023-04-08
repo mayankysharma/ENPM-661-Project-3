@@ -49,7 +49,7 @@ class A_star_Proj3_Phase2():
 
         cv2.circle(self.map, (self.edit_start_pos[0], self.edit_start_pos[1]), 5, (0,255,0), 2)
         cv2.circle(self.map, (self.edit_goal_pos[0], self.edit_goal_pos[1]), 5, (0, 0, 255), 2)
-        cv2.imwrite("map.jpg", self.map)
+        cv2.imwrite("map2.jpg", self.map)
 
 
         self.node_state = queue.PriorityQueue()

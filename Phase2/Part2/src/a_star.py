@@ -98,8 +98,11 @@ class A_star_Proj3_Phase2():
             elif self.edit_goal_pos[1] < row_limit and self.edit_start_pos[1] > row_limit:
                 print("please enter node again, not able to reach the goal")    
                 Flag = False
-        if self.map[self.edit_goal_pos[1], self.edit_goal_pos[0],0] > 0 or self.map[self.edit_start_pos[1],self.edit_start_pos[0],0] > 0:
-            print("please enter node again, as it is coinciding with the obstacles")
+        if self.map[self.edit_goal_pos[1], self.edit_goal_pos[0],0] > 0: 
+            print("please enter goal node again, as it is coinciding with the obstacles")
+            Flag = False
+        if self.map[self.edit_start_pos[1],self.edit_start_pos[0],0] > 0:
+            print("please enter start node again, as it is coinciding with the obstacles")
             Flag = False
         return Flag
             
@@ -157,13 +160,10 @@ class A_star_Proj3_Phase2():
         cost_to_come = D
         cost_to_goal = self.dist(new_pos, self.goal_pos)
         cost = cost_to_come + cost_to_goal
-        
-        new_angle %= 360
-        # print(new_angle)
         new_pos = (new_x, new_y, new_angle)
-        # idx = ((360+new_angle)%360)//10 if new_angle < 0 else new_angle//10
+        new_angle %= 360
+        
         idx = (new_angle%360)//self.ang_interval
-        # print(round(new_pos[1]*2), round(new_pos[0]*2),round(idx), new_angle)  
         
         new_pos_map_coord = self.real2map_coord(new_pos)
         # print(new_pos_map_coord, new_pos)

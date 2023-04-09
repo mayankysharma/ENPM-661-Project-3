@@ -1,13 +1,11 @@
 <launch>
   <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
-  <arg name="x_pos" default="0.0"/>
-  <arg name="y_pos" default="0.0"/>
-  <arg name="z_pos" default="0.0"/>
-    <arg name = "start_x" default= "0"/>
-  <arg name = "start_y" default= "0"/>
+  <arg name="start_x_pos" default="0.0"/>
+  <arg name="start_y_pos" default="0.0"/>
+  <arg name="start_z_pos" default="0.0"/>
   <arg name = "start_ang" default= "0"/>
-  <arg name = "goal_x" default= "500"/>
-  <arg name = "goal_y" default= "0"/>
+  <arg name = "goal_x_pos" default= "5.0"/>
+  <arg name = "goal_y_pos" default= "0.0"/>
   <arg name = "clearance" default= "8"/>
   <arg name = "rpm1" default= "8"/>
   <arg name = "rpm2" default= "10"/>
@@ -24,11 +22,11 @@
 
   <param name="robot_description" command="$(find xacro)/xacro --inorder $(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro" />
 
-  <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf" args="-urdf -model turtlebot3_$(arg model) -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -param robot_description" />
+  <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf" args="-urdf -model turtlebot3_$(arg model) -x $(arg start_x_pos) -y $(arg start_y_pos) -z $(arg start_z_pos) -param robot_description" />
 
   <node pkg="Part2" name="turtle_talker" type="publish.py" 
     output="screen"
-    args = "$(arg start_x) $(arg start_y) $(arg start_ang) $(arg goal_x) $(arg goal_y) $(arg clearance) $(arg rpm1) $(arg rpm2)"/>
+    args = "$(arg start_x_pos) $(arg start_y_pos) $(arg start_ang) $(arg goal_x_pos) $(arg goal_y_pos) $(arg clearance) $(arg rpm1) $(arg rpm2)"/>
 
 
 </launch>

@@ -49,19 +49,27 @@ python3 Part1/Project3_Phase2_Part1.py --StartPos 18 18 90 --GoalPos 200 230--cl
 * Steps to build the code
 ```
 cp -r Phase2/Part2/Part2 ~/catkin_ws/src/.
+cd ~/catkin_ws
 catkin_make
 source devel/setup.bash
+cd src/
 ```
 
 * To run the launch file
-    * Input start and goal position in cms
+    * Input start and goal position in m
 
 ```
-roslaunch Part2/launch/turtle_aStar.launch start_x:=<input> start_y:=<input> start_ang:=<input> goal_x:=<input> goal_y:=<input> clearance:=<input> rpm1:=<input> rpm2:=<input>
+roslaunch Part2/launch/turtle_aStar.launch start_x_pos:=<input> start_y_pos:=<input> start_ang:=<input> goal_x_pos:=<input> goal_y_pos:=<input> clearance:=<input> rpm1:=<input> rpm2:=<input>
 ```
 ##  Map for part 2
 ![](Part2/Part2/map2.jpg)
     
-## Sample Video Link for Part 1
-- [Phase2_part2.avi](https://drive.google.com/drive/folders/1jY5e3Zd3WyVgWmlq-8UkMD8aSfVye8KI?usp=share_link)
+## Output Video Links
+* Test Case-
+    - start position 0,0,0 (x,y input in m)
+    - Goal Position 5,0 (x,y input in m)
+    - Clearance 8
+    - Rpm1 , Rpm2 = 8, 10 respectively 
+    - Video:-
+    [Phase2_part2_test_case1.avi](https://drive.google.com/file/d/1nVtHFtOykA8sLqd8hOYSPxYibGL8FaXJ/view?usp=share_link)
 
